@@ -1,0 +1,88 @@
+{
+  "actions": [
+    {
+      "name": "AI Translate to Vietnamese",
+      "shortcut": "ctrl+shift+t",
+      "description": "Select the text and allow ChatGPT to translate it for you",
+      "steps": [
+        {
+          "type": "clipboard",
+          "value": "",
+          "delay": 0.0,
+          "clipboard_action": "copy"
+        },
+        {
+          "type": "open_app",
+          "value": "chatGPT",
+          "delay": 0.2
+        },
+        {
+          "type": "keyboard",
+          "value": "Please translate to vietnamese: ",
+          "delay": 3.0,
+          "keyboard_input_type": "text"
+        },
+        {
+          "type": "keyboard",
+          "value": "shift+enter",
+          "delay": 0.6,
+          "keyboard_input_type": "key_combination"
+        },
+        {
+          "type": "clipboard",
+          "value": "",
+          "delay": 0.5,
+          "clipboard_action": "paste"
+        },
+        {
+          "type": "keyboard",
+          "value": "enter",
+          "delay": 0.1,
+          "keyboard_input_type": "key_combination"
+        }
+      ]
+    },
+    {
+      "name": "Explain Code (Copy)",
+      "shortcut": "ctrl+shift+e",
+      "description": "Explain selected code using ChatGPT",
+      "steps": [
+        {
+          "type": "clipboard",
+          "value": "",
+          "delay": 0.0,
+          "clipboard_action": "copy"
+        },
+        {
+          "type": "open_app",
+          "value": "chatGPT",
+          "delay": 0.2
+        },
+        {
+          "type": "keyboard",
+          "value": "Please explain what this code does in detail: ",
+          "delay": 3.0,
+          "keyboard_input_type": "text"
+        },
+        {
+          "type": "keyboard",
+          "value": "shift+enter",
+          "delay": 0.6,
+          "keyboard_input_type": "key_combination"
+        },
+        {
+          "type": "clipboard",
+          "value": "",
+          "delay": 0.5,
+          "clipboard_action": "paste"
+        },
+        {
+          "type": "keyboard",
+          "value": "enter",
+          "delay": 0.5,
+          "keyboard_input_type": "key_combination"
+        }
+      ]
+    }
+  ]
+}
