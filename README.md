@@ -10,10 +10,11 @@ Smart Actions is a productivity tool that allows you to create custom keyboard s
   - Open URLs in your default browser
   - Simulate keyboard input (text or key combinations)
   - Clipboard operations (copy/paste)
+  - Add delays between actions
 - **Action Templates**: Pre-configured templates for common tasks like:
   - AI Translation with ChatGPT
   - Code explanation with ChatGPT
-- **User-Friendly Interface**: Easily create, edit, and manage your smart actions
+- **User-Friendly Interface**: Easily create, edit, and manage your smart actions through a PyQt6-based GUI
 - **Cross-Platform Support**: Works on macOS, Windows, and Linux
 
 ## Installation
@@ -56,13 +57,12 @@ python smart_actions_ui.py
 
 ### Creating a Smart Action
 
-1. Click the "Add Action" button
+1. Click the "Add Action" button in the "Your Actions" tab
 2. Enter a name for your action
 3. Define a keyboard shortcut (e.g., `ctrl+shift+t`)
 4. Add steps to your action sequence:
-   - Select a step type (open app, open URL, keyboard input, clipboard)
+   - Select a step type (open app, open URL, keyboard input, clipboard, delay)
    - Configure the step parameters
-   - Set delay between steps if needed
 5. Click "Save Changes"
 
 ### Using Smart Actions
@@ -88,6 +88,7 @@ python smart_actions_ui.py
 - **Clipboard**:
   - Copy selected text
   - Paste from clipboard
+- **Delay**: Add a timed pause between actions (0.1-60 seconds)
 
 ## Configuration Files
 
@@ -108,8 +109,19 @@ python smart_actions_ui.py
 2. Press `ctrl+shift+e`
 3. The code is copied, ChatGPT is opened, and the code is sent with an explanation prompt
 
+## Technical Details
+
+- Built with PyQt6 for the user interface
+- Uses pynput for keyboard monitoring and control
+- Implements cross-platform compatibility for key operations
+
 ## Troubleshooting
 
 - **Keyboard shortcuts not working**: Ensure the Smart Actions service is running by clicking "Start Smart Actions"
 - **Applications not opening**: Verify the application name/path is correct
 - **Delays too short/long**: Adjust the delay values in your action steps
+- **Permission issues**: Some systems may require additional permissions for keyboard monitoring
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

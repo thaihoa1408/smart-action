@@ -110,18 +110,22 @@ class SmartActionManager:
         for action in self.actions[key_combo]:
             action_type = action.get("type")
             value = action.get("value")
-            delay = action.get("delay", 0)
-
-            if delay:
-                time.sleep(delay)
+            
+            # We no longer need to check for delay here since we have a dedicated delay action type
+            # The delay field is kept for backward compatibility but not used
 
             if action_type == "open_app":
                 if platform.system() == "Darwin":  # macOS
                     # Simple open command that either opens the app or brings it to front
                     subprocess.run(["open", "-a", value])
+                    # Wait for the app to fully launch
+                    app_name = value.split("/")[-1].split(".app")[0] if ".app" in value else value
+                    self._wait_for_app_launch(app_name)
                 elif platform.system() == "Windows":
                     # For Windows, you might want to add similar logic using tasklist
-                    subprocess.Popen([value])
+                    process = subprocess.Popen([value])
+                    # Wait for the process to initialize
+                    self._wait_for_process(process.pid)
             elif action_type == "open_url":
                 # Open URL in default web browser
                 if platform.system() == "Darwin":  # macOS
@@ -132,14 +136,39 @@ class SmartActionManager:
                 else:  # Linux and other platforms
                     import webbrowser
                     webbrowser.open(value)
+            elif action_type == "delay":
+                # Simply wait for the specified number of seconds
+                try:
+                    delay_seconds = float(value)
+                    print(f"Delaying for {delay_seconds} seconds...")
+                    time.sleep(delay_seconds)
+                    print(f"Delay complete")
+                except ValueError:
+                    print(f"Invalid delay value: {value}")
             elif action_type == "keyboard":
                 kb = keyboard.Controller()
                 keyboard_input_type = action.get("keyboard_input_type", "text")  # Default to text for backward compatibility
                 value = action.get("value", "")
                 
                 if keyboard_input_type == "text":
-                    # Simply type the text as is
-                    kb.type(value)
+                    # Use clipboard for instant text input instead of typing
+                    import pyperclip
+                    # Save current clipboard content
+                    previous_clipboard = pyperclip.paste()
+                    # Copy new text to clipboard
+                    pyperclip.copy(value)
+                    # Paste the text
+                    if platform.system() == "Darwin":  # macOS
+                        with kb.pressed(Key.cmd):
+                            kb.press('v')
+                            kb.release('v')
+                    else:  # Windows/Linux
+                        with kb.pressed(Key.ctrl):
+                            kb.press('v')
+                            kb.release('v')
+                    # Optional: restore previous clipboard content
+                    time.sleep(0.1)  # Small delay to ensure paste completes
+                    pyperclip.copy(previous_clipboard)
                 else:  # key_combination
                     # Handle various key combinations
                     if value == "enter":
@@ -267,6 +296,65 @@ class SmartActionManager:
                         with kb.pressed(Key.ctrl):
                             kb.press('v')
                             kb.release('v')
+
+    def _wait_for_app_launch(self, app_name, timeout=10):
+        """Wait for an application to fully launch on macOS."""
+        print(f"Waiting for {app_name} to launch...")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                # Check if the app is running and responding
+                if platform.system() == "Darwin":  # macOS
+                    result = subprocess.run(
+                        ["osascript", "-e", f'tell application "System Events" to (name of processes) contains "{app_name}"'],
+                        capture_output=True, text=True
+                    )
+                    if "true" in result.stdout.lower():
+                        # Give the app a moment to fully initialize its UI
+                        time.sleep(0.5)
+                        print(f"{app_name} is now running")
+                        return True
+                else:  # Linux
+                    result = subprocess.run(
+                        ["pgrep", "-f", app_name],
+                        capture_output=True, text=True
+                    )
+                    if result.stdout.strip():
+                        time.sleep(0.5)
+                        print(f"{app_name} is now running")
+                        return True
+                
+                time.sleep(0.2)  # Short delay between checks
+            except Exception as e:
+                print(f"Error checking app status: {e}")
+        
+        print(f"Timed out waiting for {app_name} to launch")
+        return False
+
+    def _wait_for_process(self, pid, timeout=10):
+        """Wait for a process to fully initialize on Windows."""
+        print(f"Waiting for process {pid} to initialize...")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                if platform.system() == "Windows":
+                    # Check if the process is responding
+                    result = subprocess.run(
+                        ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+                        capture_output=True, text=True
+                    )
+                    if str(pid) in result.stdout:
+                        # Give the app a moment to fully initialize its UI
+                        time.sleep(1.0)
+                        print(f"Process {pid} is now running")
+                        return True
+                
+                time.sleep(0.2)  # Short delay between checks
+            except Exception as e:
+                print(f"Error checking process status: {e}")
+        
+        print(f"Timed out waiting for process {pid} to initialize")
+        return False
 
 def main():
     if os.geteuid() != 0 and platform.system() == "Darwin":
