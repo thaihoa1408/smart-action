@@ -1,3 +1,56 @@
 {
-  "actions": []
+  "actions": [
+    {
+      "name": "AI Translate to Vietnamese (Copy)",
+      "shortcut": "ctrl+shift+t",
+      "description": "Select the text and allow ChatGPT to translate it for you",
+      "steps": [
+        {
+          "type": "clipboard",
+          "value": "",
+          "clipboard_action": "copy"
+        },
+        {
+          "type": "delay",
+          "value": 0.2
+        },
+        {
+          "type": "open_app",
+          "value": "chatGPT"
+        },
+        {
+          "type": "delay",
+          "value": 0.5
+        },
+        {
+          "type": "keyboard",
+          "value": "Please translate to vietnamese: ",
+          "keyboard_input_type": "text"
+        },
+        {
+          "type": "delay",
+          "value": 0.5
+        },
+        {
+          "type": "keyboard",
+          "value": "shift+enter",
+          "keyboard_input_type": "key_combination"
+        },
+        {
+          "type": "clipboard",
+          "value": "",
+          "clipboard_action": "paste"
+        },
+        {
+          "type": "delay",
+          "value": 0.1
+        },
+        {
+          "type": "keyboard",
+          "value": "enter",
+          "keyboard_input_type": "key_combination"
+        }
+      ]
+    }
+  ]
 }

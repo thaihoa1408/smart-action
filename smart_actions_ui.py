@@ -17,7 +17,7 @@ class ActionStepDialog(QDialog):
         
         # Step type selection
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["open_app", "open_url", "keyboard", "clipboard"])
+        self.type_combo.addItems(["open_app", "open_url", "keyboard", "clipboard", "delay"])
         self.type_combo.currentTextChanged.connect(self.on_type_changed)
         layout.addRow("Type:", self.type_combo)
         
@@ -34,17 +34,19 @@ class ActionStepDialog(QDialog):
         self.clipboard_action_row = layout.rowCount()
         layout.addRow("Clipboard Action:", self.clipboard_action_combo)
         
-        # Value input
+        # Value input - text field for most actions
         self.value_input = QLineEdit()
+        self.value_row = layout.rowCount()
         layout.addRow("Value:", self.value_input)
         
-        # Delay input
-        self.delay_spin = QDoubleSpinBox()
-        self.delay_spin.setRange(0, 10)
-        self.delay_spin.setSingleStep(0.1)
-        self.delay_spin.setDecimals(1)
-        self.delay_spin.setValue(0)
-        layout.addRow("Delay (seconds):", self.delay_spin)
+        # Numeric input for delay action
+        self.delay_input = QDoubleSpinBox()
+        self.delay_input.setRange(0.1, 60.0)  # Allow delays from 0.1 to 60 seconds
+        self.delay_input.setSingleStep(0.1)    # Step by 0.1 seconds
+        self.delay_input.setValue(1.0)         # Default to 1 second
+        self.delay_input.setSuffix(" seconds")
+        self.delay_row = layout.rowCount()
+        layout.addRow("Delay:", self.delay_input)
         
         # Buttons
         button_layout = QHBoxLayout()
@@ -72,11 +74,25 @@ class ActionStepDialog(QDialog):
         clipboard_action_label = self.layout().itemAt(self.clipboard_action_row, QFormLayout.ItemRole.LabelRole).widget()
         clipboard_action_field = self.layout().itemAt(self.clipboard_action_row, QFormLayout.ItemRole.FieldRole).widget()
         
-        # Hide both by default
+        # Get value input fields
+        value_label = self.layout().itemAt(self.value_row, QFormLayout.ItemRole.LabelRole).widget()
+        value_field = self.layout().itemAt(self.value_row, QFormLayout.ItemRole.FieldRole).widget()
+        
+        # Get delay input fields
+        delay_label = self.layout().itemAt(self.delay_row, QFormLayout.ItemRole.LabelRole).widget()
+        delay_field = self.layout().itemAt(self.delay_row, QFormLayout.ItemRole.FieldRole).widget()
+        
+        # Hide all specialized inputs by default
         keyboard_type_label.setVisible(False)
         keyboard_type_field.setVisible(False)
         clipboard_action_label.setVisible(False)
         clipboard_action_field.setVisible(False)
+        
+        # Show text value input by default, hide delay input
+        value_label.setVisible(True)
+        value_field.setVisible(True)
+        delay_label.setVisible(False)
+        delay_field.setVisible(False)
         
         # Always re-enable the value input when changing types
         self.value_input.setEnabled(True)
@@ -96,6 +112,12 @@ class ActionStepDialog(QDialog):
             
             # Update value field placeholder based on clipboard action
             self.on_clipboard_action_changed(self.clipboard_action_combo.currentText())
+        elif text == "delay":
+            # Show delay input instead of text input for delay action
+            value_label.setVisible(False)
+            value_field.setVisible(False)
+            delay_label.setVisible(True)
+            delay_field.setVisible(True)
         else:
             # Update placeholder based on action type
             if text == "open_app":
@@ -113,18 +135,27 @@ class ActionStepDialog(QDialog):
             self.value_input.clear()
     
     def get_step_data(self):
-        data = {
-            "type": self.type_combo.currentText(),
-            "value": self.value_input.text(),
-            "delay": self.delay_spin.value()
-        }
+        step_type = self.type_combo.currentText()
+        
+        if step_type == "delay":
+            data = {
+                "type": step_type,
+                "value": str(self.delay_input.value()),  # Convert to string for consistency
+                "delay": 0  # Set default delay to 0 for all actions
+            }
+        else:
+            data = {
+                "type": step_type,
+                "value": self.value_input.text(),
+                "delay": 0  # Set default delay to 0 for all actions
+            }
         
         # Add keyboard_input_type if the type is keyboard
-        if self.type_combo.currentText() == "keyboard":
+        if step_type == "keyboard":
             data["keyboard_input_type"] = self.keyboard_type_combo.currentText()
         
         # Add clipboard_action if the type is clipboard
-        elif self.type_combo.currentText() == "clipboard":
+        elif step_type == "clipboard":
             data["clipboard_action"] = self.clipboard_action_combo.currentText()
             
         return data
@@ -317,14 +348,14 @@ class SmartActionsUI(QMainWindow):
             for step in action["steps"]:
                 if step['type'] == "keyboard" and "keyboard_input_type" in step:
                     self.steps_list.addItem(
-                        f"{step['type']} ({step['keyboard_input_type']}): {step['value']} (delay: {step['delay']}s)"
+                        f"{step['type']} ({step['keyboard_input_type']}): {step['value']}"
                     )
                 elif step['type'] == "clipboard" and "clipboard_action" in step:
                     self.steps_list.addItem(
-                        f"{step['type']} ({step['clipboard_action']}): {step['value']} (delay: {step['delay']}s)"
+                        f"{step['type']} ({step['clipboard_action']}): {step['value']}"
                     )
                 else:
-                    self.steps_list.addItem(f"{step['type']}: {step['value']} (delay: {step['delay']}s)")
+                    self.steps_list.addItem(f"{step['type']}: {step['value']}")
     
     def add_action(self):
         new_action = {
@@ -357,15 +388,15 @@ class SmartActionsUI(QMainWindow):
                     # Display with keyboard input type if applicable
                     if step_data['type'] == "keyboard" and "keyboard_input_type" in step_data:
                         self.steps_list.addItem(
-                            f"{step_data['type']} ({step_data['keyboard_input_type']}): {step_data['value']} (delay: {step_data['delay']}s)"
+                            f"{step_data['type']} ({step_data['keyboard_input_type']}): {step_data['value']}"
                         )
                     elif step_data['type'] == "clipboard" and "clipboard_action" in step_data:
                         self.steps_list.addItem(
-                            f"{step_data['type']} ({step_data['clipboard_action']}): {step_data['value']} (delay: {step_data['delay']}s)"
+                            f"{step_data['type']} ({step_data['clipboard_action']}): {step_data['value']}"
                         )
                     else:
                         self.steps_list.addItem(
-                            f"{step_data['type']}: {step_data['value']} (delay: {step_data['delay']}s)"
+                            f"{step_data['type']}: {step_data['value']}"
                         )
     
     def delete_step(self):
@@ -391,8 +422,15 @@ class SmartActionsUI(QMainWindow):
                 
                 # Set dialog fields to match the current step data
                 dialog.type_combo.setCurrentText(step_data["type"])
-                dialog.value_input.setText(step_data["value"])
-                dialog.delay_spin.setValue(step_data["delay"])
+                
+                # Set value based on step type
+                if step_data["type"] == "delay":
+                    try:
+                        dialog.delay_input.setValue(float(step_data["value"]))
+                    except ValueError:
+                        dialog.delay_input.setValue(1.0)  # Default to 1 second if conversion fails
+                else:
+                    dialog.value_input.setText(step_data["value"])
                 
                 # Set additional fields if they exist
                 if step_data["type"] == "keyboard" and "keyboard_input_type" in step_data:
@@ -408,15 +446,15 @@ class SmartActionsUI(QMainWindow):
                     updated_step = action["steps"][current_step]
                     if updated_step['type'] == "keyboard" and "keyboard_input_type" in updated_step:
                         self.steps_list.item(current_step).setText(
-                            f"{updated_step['type']} ({updated_step['keyboard_input_type']}): {updated_step['value']} (delay: {updated_step['delay']}s)"
+                            f"{updated_step['type']} ({updated_step['keyboard_input_type']}): {updated_step['value']}"
                         )
                     elif updated_step['type'] == "clipboard" and "clipboard_action" in updated_step:
                         self.steps_list.item(current_step).setText(
-                            f"{updated_step['type']} ({updated_step['clipboard_action']}): {updated_step['value']} (delay: {updated_step['delay']}s)"
+                            f"{updated_step['type']} ({updated_step['clipboard_action']}): {updated_step['value']}"
                         )
                     else:
                         self.steps_list.item(current_step).setText(
-                            f"{updated_step['type']}: {updated_step['value']} (delay: {updated_step['delay']}s)"
+                            f"{updated_step['type']}: {updated_step['value']}"
                         )
     
     def save_changes(self):

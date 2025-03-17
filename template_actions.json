@@ -8,78 +8,105 @@
         {
           "type": "clipboard",
           "value": "",
-          "delay": 0.0,
           "clipboard_action": "copy"
         },
         {
+          "type": "delay",
+          "value": 0.2
+        },
+        {
           "type": "open_app",
-          "value": "chatGPT",
-          "delay": 0.2
+          "value": "chatGPT"
+        },
+        {
+          "type": "delay",
+          "value": 0.5
         },
         {
           "type": "keyboard",
           "value": "Please translate to vietnamese: ",
-          "delay": 3.0,
           "keyboard_input_type": "text"
+        },
+        {
+          "type": "delay",
+          "value": 0.5
         },
         {
           "type": "keyboard",
           "value": "shift+enter",
-          "delay": 0.6,
           "keyboard_input_type": "key_combination"
         },
         {
           "type": "clipboard",
           "value": "",
-          "delay": 0.5,
           "clipboard_action": "paste"
+        },
+        {
+          "type": "delay",
+          "value": 0.1
         },
         {
           "type": "keyboard",
           "value": "enter",
-          "delay": 0.1,
           "keyboard_input_type": "key_combination"
         }
       ]
     },
     {
-      "name": "Explain Code (Copy)",
+      "name": "AI Explain Code",
       "shortcut": "ctrl+shift+e",
       "description": "Explain selected code using ChatGPT",
       "steps": [
         {
           "type": "clipboard",
           "value": "",
-          "delay": 0.0,
           "clipboard_action": "copy"
         },
         {
+          "type": "delay",
+          "value": 0.2
+        },
+        {
           "type": "open_app",
-          "value": "chatGPT",
-          "delay": 0.2
+          "value": "chatGPT"
+        },
+        {
+          "type": "delay",
+          "value": 0.5
         },
         {
           "type": "keyboard",
           "value": "Please explain what this code does in detail: ",
-          "delay": 3.0,
           "keyboard_input_type": "text"
+        },
+        {
+          "type": "delay",
+          "value": "1.0",
+          "delay": 0
         },
         {
           "type": "keyboard",
           "value": "shift+enter",
-          "delay": 0.6,
           "keyboard_input_type": "key_combination"
+        },
+        {
+          "type": "delay",
+          "value": "0.2",
+          "delay": 0
         },
         {
           "type": "clipboard",
           "value": "",
-          "delay": 0.5,
           "clipboard_action": "paste"
+        },
+        {
+          "type": "delay",
+          "value": "0.2",
+          "delay": 0
         },
         {
           "type": "keyboard",
           "value": "enter",
-          "delay": 0.5,
           "keyboard_input_type": "key_combination"
         }
       ]
